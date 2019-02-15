@@ -62,9 +62,21 @@ router.post('/users/login', function(req, res, next){
 
 router.post('/users', function(req, res, next){
   var user = new User();
+  
+  var imgArray = [
+    'https://semantic-ui.com/images/avatar/large/elliot.jpg',
+    'https://semantic-ui.com/images/avatar/large/helen.jpg',
+    'https://semantic-ui.com/images/avatar/large/jenny.jpg',
+    'https://semantic-ui.com/images/avatar/large/joe.jpg',
+    'https://semantic-ui.com/images/avatar/large/justen.jpg',
+    'https://semantic-ui.com/images/avatar/large/laura.jpg'
+  ]
 
+  var img = imgArray[Math.floor(Math.random() * imgArray.length)];
+  
   user.username = req.body.user.username;
   user.email = req.body.user.email;
+  user.image = img;
   user.setPassword(req.body.user.password);
 
   user.save().then(function(){
