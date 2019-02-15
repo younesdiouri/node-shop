@@ -43,7 +43,7 @@ ArticleSchema.methods.toJSONFor = function(user){
     slug: this.slug,
     title: this.title,
     description: this.description,
-    url: this.body,
+    url: this.url,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
     tagList: this.tagList,
