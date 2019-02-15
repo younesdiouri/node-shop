@@ -47,18 +47,18 @@ router.get('/', auth.optional, function(req, res, next) {
 
   Promise.all([
     req.query.author ? User.findOne({username: req.query.author}) : null,
-    req.query.favorited ? User.findOne({username: req.query.favorited}) : null
+    req.query.wishlisted ? User.findOne({username: req.query.wishlisted}) : null
   ]).then(function(results){
     var author = results[0];
-    var favoriter = results[1];
+    var wishlistr = results[1];
 
     if(author){
       query.author = author._id;
     }
 
-    if(favoriter){
-      query._id = {$in: favoriter.favorites};
-    } else if(req.query.favorited){
+    if(wishlistr){
+      query._id = {$in: wishlistr.whishlists};
+    } else if(req.query.wishlisted){
       query._id = {$in: []};
     }
 
@@ -102,12 +102,12 @@ router.get('/feed', auth.required, function(req, res, next) {
     if (!user) { return res.sendStatus(401); }
 
     Promise.all([
-      Article.find({ author: {$in: user.following}})
+      Article.find({ author: user})
         .limit(Number(limit))
         .skip(Number(offset))
         .populate('author')
         .exec(),
-      Article.count({ author: {$in: user.following}})
+      Article.count({ author: user})
     ]).then(function(results){
       var articles = results[0];
       var articlesCount = results[1];
@@ -161,8 +161,8 @@ router.put('/:article', auth.required, function(req, res, next) {
         req.article.description = req.body.article.description;
       }
 
-      if(typeof req.body.article.body !== 'undefined'){
-        req.article.body = req.body.article.body;
+      if(typeof req.body.article.url !== 'undefined'){
+        req.article.url = req.body.article.url;
       }
 
       if(typeof req.body.article.tagList !== 'undefined'){
@@ -193,30 +193,30 @@ router.delete('/:article', auth.required, function(req, res, next) {
   }).catch(next);
 });
 
-// Favorite an article
-router.post('/:article/favorite', auth.required, function(req, res, next) {
+// Wishlist an article
+router.post('/:article/wishlist', auth.required, function(req, res, next) {
   var articleId = req.article._id;
 
   User.findById(req.payload.id).then(function(user){
     if (!user) { return res.sendStatus(401); }
 
-    return user.favorite(articleId).then(function(){
-      return req.article.updateFavoriteCount().then(function(article){
+    return user.wishlist(articleId).then(function(){
+      return req.article.updateWishlistCount().then(function(article){
         return res.json({article: article.toJSONFor(user)});
       });
     });
   }).catch(next);
 });
 
-// Unfavorite an article
-router.delete('/:article/favorite', auth.required, function(req, res, next) {
+// Unwishlist an article
+router.delete('/:article/wishlist', auth.required, function(req, res, next) {
   var articleId = req.article._id;
 
   User.findById(req.payload.id).then(function (user){
     if (!user) { return res.sendStatus(401); }
 
-    return user.unfavorite(articleId).then(function(){
-      return req.article.updateFavoriteCount().then(function(article){
+    return user.unwishlist(articleId).then(function(){
+      return req.article.updateWishlistCount().then(function(article){
         return res.json({article: article.toJSONFor(user)});
       });
     });

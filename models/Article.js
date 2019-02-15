@@ -7,8 +7,8 @@ var ArticleSchema = new mongoose.Schema({
   slug: {type: String, lowercase: true, unique: true},
   title: String,
   description: String,
-  body: String,
-  favoritesCount: {type: Number, default: 0},
+  url: String,
+  wishlistsCount: {type: Number, default: 0},
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
   tagList: [{ type: String }],
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
@@ -28,11 +28,11 @@ ArticleSchema.methods.slugify = function() {
   this.slug = slug(this.title) + '-' + (Math.random() * Math.pow(36, 6) | 0).toString(36);
 };
 
-ArticleSchema.methods.updateFavoriteCount = function() {
+ArticleSchema.methods.updateWishlistCount = function() {
   var article = this;
 
-  return User.count({favorites: {$in: [article._id]}}).then(function(count){
-    article.favoritesCount = count;
+  return User.count({whishlists: {$in: [article._id]}}).then(function(count){
+    article.wishlistsCount = count;
 
     return article.save();
   });
@@ -43,12 +43,12 @@ ArticleSchema.methods.toJSONFor = function(user){
     slug: this.slug,
     title: this.title,
     description: this.description,
-    body: this.body,
+    url: this.body,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
     tagList: this.tagList,
-    favorited: user ? user.isFavorite(this._id) : false,
-    favoritesCount: this.favoritesCount,
+    wishlisted: user ? user.isWishlist(this._id) : false,
+    wishlistsCount: this.wishlistsCount,
     author: this.author.toProfileJSONFor(user)
   };
 };
